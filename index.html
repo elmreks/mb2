@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The F*cking Brief</title>
+    <style>
+        :root {
+            --bg: #e0e0e0; /* Concrete gray */
+            --paper: #fff;
+            --text: #222;
+            --accent: #b91c1c; /* Red pencil color */
+            --border: 2px solid #222;
+            --font-hand: 'Courier New', Courier, monospace; /* Rough draft style */
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: var(--font-hand);
+            color: var(--text);
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- THE HEADER --- */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--text);
+            padding-bottom: 20px;
+            margin-bottom: 10px;
+        }
+        h1 { margin: 0; font-size: 2.5rem; text-transform: uppercase; letter-spacing: -1px; }
+        .sub-head { font-size: 1.2rem; margin-top: 10px; opacity: 0.8; }
+
+        /* --- INFO BAR (Time | Weather) --- */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--paper);
+            padding: 15px;
+            border: var(--border);
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* --- THE GRID (News, Giggle, Calendar) --- */
+        .grid-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--paper);
+            border: var(--border);
+            padding: 20px;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.2); /* Hard shadow look */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h2 { margin-top: 0; border-bottom: 1px dashed #999; padding-bottom: 10px; }
+
+        /* News Links */
+        .news-list a {
+            display: block;
+            padding: 8px 0;
+            text-decoration: none;
+            color: var(--text);
+            border-bottom: 1px dotted #ccc;
+        }
+        .news-list a:hover { color: var(--accent); font-weight: bold; }
+
+        /* Giggle Button */
+        #giggle-display {
+            min-height: 60px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        button {
+            background: var(--text);
+            color: #fff;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        button:hover { background: var(--accent); }
+
+        /* Calendar (Simple Month View) */
+        #calendar-display { font-size: 0.9rem; line-height: 1.5; white-space: pre; }
+
+        /* --- BOTTOM SECTION --- */
+        .funny-shit {
+            background: #fffbe6; /* Post-it yellow */
+            border: var(--border);
+            padding: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+            transform: rotate(-1deg); /* Slight tilt */
+        }
+
+        /* --- ROLLING THOUGHTS --- */
+        .rolling-thoughts {
+            border: var(--border);
+            padding: 20px;
+            background: var(--paper);
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: none;
+            font-family: var(--font-hand);
+            font-size: 1rem;
+            resize: vertical;
+            background: transparent;
+            outline: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1 id="main-title">The Morning F*cking Brief!</h1>
+        <div class="sub-head" id="greeting">Good Morning, Ethan! How goes the hammer swinging?</div>
+    </header>
+
+    <div class="info-bar">
+        <div id="local-time">Loading Time...</div>
+        <div id="weather-box">
+            <span>Checking SF Sky...</span>
+        </div>
+        <div id="forecast-box">Forecast loading...</div>
+    </div>
+
+    <div class="grid-row">
+        <div class="card">
+            <h2>[ NEWS ]</h2>
+            <div class="news-list">
+                <a href="https://news.google.com/search?q=San+Francisco" target="_blank">➤ Local (SF)</a>
+                <a href="https://news.google.com/topstories" target="_blank">➤ World Headlines</a>
+                <a href="https://www.reddit.com/r/Carpentry/" target="_blank">➤ Carpentry Subreddit</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>[ GIGGLE BUTTON ]</h2>
+            <div id="giggle-display">Press the button for a random fact...</div>
+            <button onclick="getGiggle()">Help Me!</button>
+        </div>
+
+        <div class="card">
+            <h2>[ CALENDAR ]</h2>
+            <div id="calendar-display">Loading...</div>
+        </div>
+    </div>
+
+    <div class="funny-shit" id="funny-quote">
+        "Measure twice, cut once, swear three times."
+    </div>
+
+    <div class="rolling-thoughts">
+        <h2>[ Rolling Thoughts / Notes ]</h2>
+        <textarea id="user-notes" placeholder="Type your thoughts here, Ethan. I'll save them for tomorrow..."></textarea>
+    </div>
+
+</div>
+
+<script>
+    // --- 1. DYNAMIC HEADER & TIME ---
+    function updateTime() {
+        const now = new Date();
+        const hour = now.getHours();
+        
+        // Time String
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('local-time').innerText = "🕒 " + timeStr;
+
+        // Dynamic Title Logic
+        let period = "Morning";
+        if (hour >= 12) period = "Afternoon";
+        if (hour >= 17) period = "Evening";
+        if (hour >= 22 || hour < 4) period = "Late Night";
+
+        document.getElementById('main-title').innerText = `The ${period} F*cking Brief!`;
+        document.getElementById('greeting').innerText = `Good ${period}, Ethan! Ready to build something?`;
+
+        // Calendar Date
+        document.getElementById('calendar-display').innerText = now.toDateString();
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // --- 2. WEATHER (SF Coordinates: 37.77, -122.41) ---
+    async function getWeather() {
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.77&longitude=-122.41&current_weather=true&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles');
+            const data = await res.json();
+            
+            // Current
+            const temp = Math.round(data.current_weather.temperature);
+            document.getElementById('weather-box').innerHTML = `🌤️ ${temp}°F (SF)`;
+
+            // Forecast (High/Low)
+            const high = Math.round(data.daily.temperature_2m_max[0]);
+            const low = Math.round(data.daily.temperature_2m_min[0]);
+            document.getElementById('forecast-box').innerHTML = `High: ${high}° / Low: ${low}°`;
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    getWeather();
+
+    // --- 3. GIGGLE BUTTON & FUNNY SHIT ---
+    const facts = [
+        "A wood frog can hold its pee for 8 months.",
+        "Wombat poop is cube-shaped so it doesn't roll away.",
+        "The electric chair was invented by a dentist.",
+        "Bangkok's full name is 168 letters long.",
+        "Bananas are curved because they grow towards the sun."
+    ];
+    
+    const quotes = [
+        "I cut it three times and it's still too short.",
+        "Caulk and paint make me the carpenter I ain't.",
+        "It's not a mistake, it's a design feature.",
+        "Safety Third.",
+        "If you can't be good, be good at hiding it."
+    ];
+
+    function getGiggle() {
+        const randomFact = facts[Math.floor(Math.random() * facts.length)];
+        document.getElementById('giggle-display').innerText = randomFact;
+    }
+    
+    // Set random funny quote on load
+    document.getElementById('funny-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+
+
+    // --- 4. ROLLING THOUGHTS (Local Storage) ---
+    const noteArea = document.getElementById('user-notes');
+    
+    // Load saved notes
+    if(localStorage.getItem('ethanNotes')) {
+        noteArea.value = localStorage.getItem('ethanNotes');
+    }
+
+    // Save on typing
+    noteArea.addEventListener('input', function() {
+        localStorage.setItem('ethanNotes', noteArea.value);
+    });
+
+</script>
+
+</body>
+</html>
